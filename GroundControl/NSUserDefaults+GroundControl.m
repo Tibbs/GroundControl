@@ -21,7 +21,7 @@
 // THE SOFTWARE.
 
 #import "NSUserDefaults+GroundControl.h"
-#import "AFHTTPRequestOperation.h"
+#import "AFHTTPSessionManager.h"
 #import "AFURLRequestSerialization.h"
 #import "AFURLResponseSerialization.h"
 
@@ -71,49 +71,19 @@
                         success:(void (^)(NSDictionary *defaults))success
                         failure:(void (^)(NSError *error))failure
 {
-    id <AFURLRequestSerialization> requestSerializer = self.requestSerializer ? self.requestSerializer : [AFPropertyListRequestSerializer serializer];
-
-    NSError *error = nil;
-    NSURLRequest *urlRequest = [requestSerializer requestBySerializingRequest:[NSURLRequest requestWithURL:url] withParameters:nil error:&error];
-    if (error) {
-        if (failure) {
-            failure(error);
-        }
-
-        return;
-    }
-    
-    [self registerDefaultsWithURLRequest:urlRequest success:^(__unused NSURLRequest *request, __unused NSHTTPURLResponse *response, NSDictionary *defaults) {
-        if (success) {
-            success(defaults);
-        }
-    } failure:^(__unused NSURLRequest *request, __unused NSHTTPURLResponse *response, NSError *error) {
-        if (failure) {
-            failure(error);
-        }
-    }];
-}
-
-- (void)registerDefaultsWithURLRequest:(NSURLRequest *)urlRequest
-                               success:(void (^)(NSURLRequest *request, NSHTTPURLResponse *response, NSDictionary *defaults))success
-                               failure:(void (^)(NSURLRequest *request, NSHTTPURLResponse *response, NSError *error))failure
-{
-    AFHTTPRequestOperation *requestOperation = [[AFHTTPRequestOperation alloc] initWithRequest:urlRequest];
-    requestOperation.responseSerializer = self.responseSerializer ? self.responseSerializer : [AFPropertyListResponseSerializer serializer];
-    [requestOperation setCompletionBlockWithSuccess:^(AFHTTPRequestOperation *operation, id responseObject) {
+    AFHTTPSessionManager *manager = [AFHTTPSessionManager manager];
+    [manager GET:url.absoluteString parameters:nil progress:nil success:^(NSURLSessionTask *task, id responseObject) {
         [self setValuesForKeysWithDictionary:responseObject];
         [self synchronize];
         
         if (success) {
-            success(operation.request, operation.response, responseObject);
+            success(responseObject);
         }
-    } failure:^(AFHTTPRequestOperation *operation, NSError *error) {
+    } failure:^(NSURLSessionTask *operation, NSError *error) {
         if (failure) {
-            failure(operation.request, operation.response, error);
+            failure(error);
         }
     }];
-    
-    [[[self class] gc_sharedPropertyListRequestOperationQueue] addOperation:requestOperation];
 }
 
 @end
