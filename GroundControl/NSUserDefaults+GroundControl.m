@@ -82,10 +82,12 @@
         if (success) {
             success(responseObject);
         }
+        [manager invalidateSessionCancelingTasks:YES];
     } failure:^(NSURLSessionTask *operation, NSError *error) {
         if (failure) {
             failure(error);
         }
+        [manager invalidateSessionCancelingTasks:YES];
     }];
 }
 
