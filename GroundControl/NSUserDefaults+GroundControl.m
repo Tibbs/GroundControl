@@ -75,6 +75,23 @@
     configuration.requestCachePolicy = NSURLRequestReloadIgnoringLocalCacheData;
     AFHTTPSessionManager *manager = [[AFHTTPSessionManager alloc] initWithSessionConfiguration:configuration];
     manager.responseSerializer = self.responseSerializer ? self.responseSerializer : [AFPropertyListResponseSerializer serializer];
+    [manager GET:url.absoluteString parameters:nil headers:nil progress:nil success:^(NSURLSessionDataTask * _Nonnull task, id  _Nullable responseObject) {
+        [self setValuesForKeysWithDictionary:responseObject];
+        [self synchronize];
+        
+        if (success) {
+            success(responseObject);
+        }
+        [manager invalidateSessionCancelingTasks:YES resetSession:YES];
+    } failure:^(NSURLSessionDataTask * _Nullable task, NSError * _Nonnull error) {
+        if (failure) {
+            failure(error);
+        }
+        [manager invalidateSessionCancelingTasks:YES resetSession:YES];
+    }];
+
+    
+     /*
     [manager GET:url.absoluteString parameters:nil progress:nil success:^(NSURLSessionTask *task, id responseObject) {
         [self setValuesForKeysWithDictionary:responseObject];
         [self synchronize];
@@ -89,6 +106,7 @@
         }
         [manager invalidateSessionCancelingTasks:YES];
     }];
+      */
 }
 
 @end
