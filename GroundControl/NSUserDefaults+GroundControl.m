@@ -45,21 +45,7 @@
     return _sharedPropertyListRequestOperationQueue;
 }
 
-- (id <AFURLRequestSerialization>)requestSerializer {
-    return objc_getAssociatedObject(self, @selector(requestSerializer));
-}
 
-- (void)setRequestSerializer:(id <AFURLRequestSerialization>)requestSerializer {
-    objc_setAssociatedObject(self, @selector(requestSerializer), requestSerializer, OBJC_ASSOCIATION_RETAIN_NONATOMIC);
-}
-
-- (id <AFURLResponseSerialization>)responseSerializer {
-    return objc_getAssociatedObject(self, @selector(responseSerializer));
-}
-
-- (void)setResponseSerializer:(id <AFURLResponseSerialization>)responseSerializer {
-    objc_setAssociatedObject(self, @selector(responseSerializer), responseSerializer, OBJC_ASSOCIATION_RETAIN_NONATOMIC);
-}
 
 #pragma mark -
 
@@ -74,10 +60,10 @@
     NSURLSessionConfiguration *configuration = [NSURLSessionConfiguration defaultSessionConfiguration];
     configuration.requestCachePolicy = NSURLRequestReloadIgnoringLocalCacheData;
     AFHTTPSessionManager *manager = [[AFHTTPSessionManager alloc] initWithSessionConfiguration:configuration];
-    if (!self.responseSerializer) {
-        self.responseSerializer = [AFPropertyListRequestSerializer serializer];
-    }
-    manager.responseSerializer = self.responseSerializer;
+    AFPropertyListResponseSerializer *responseSerializer = [AFPropertyListResponseSerializer serializer];
+    [responseSerializer setAcceptableContentTypes:[NSSet setWithObjects:@"application/x-plist",@"binary/octet-stream", @"text/xml", @"application/octet-stream", nil]];
+
+    manager.responseSerializer = responseSerializer;
     
     [manager GET:url.absoluteString parameters:nil headers:nil progress:nil success:^(NSURLSessionDataTask * _Nonnull task, id  _Nullable responseObject) {
         [self setValuesForKeysWithDictionary:responseObject];
@@ -93,24 +79,6 @@
         }
         [manager invalidateSessionCancelingTasks:YES resetSession:YES];
     }];
-
-    
-     /*
-    [manager GET:url.absoluteString parameters:nil progress:nil success:^(NSURLSessionTask *task, id responseObject) {
-        [self setValuesForKeysWithDictionary:responseObject];
-        [self synchronize];
-        
-        if (success) {
-            success(responseObject);
-        }
-        [manager invalidateSessionCancelingTasks:YES];
-    } failure:^(NSURLSessionTask *operation, NSError *error) {
-        if (failure) {
-            failure(error);
-        }
-        [manager invalidateSessionCancelingTasks:YES];
-    }];
-      */
 }
 
 
