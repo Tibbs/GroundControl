@@ -61,7 +61,7 @@
     configuration.requestCachePolicy = NSURLRequestReloadIgnoringLocalCacheData;
     AFHTTPSessionManager *manager = [[AFHTTPSessionManager alloc] initWithSessionConfiguration:configuration];
     AFPropertyListResponseSerializer *responseSerializer = [AFPropertyListResponseSerializer serializer];
-    [responseSerializer setAcceptableContentTypes:[NSSet setWithObjects:@"application/x-plist",@"binary/octet-stream", @"text/xml", @"application/octet-stream", nil]];
+    [responseSerializer setAcceptableContentTypes:[NSSet setWithObjects:@"application/x-plist",@"binary/octet-stream", @"text/xml", @"application/octet-stream", @"application/xml", nil]];
 
     manager.responseSerializer = responseSerializer;
     
